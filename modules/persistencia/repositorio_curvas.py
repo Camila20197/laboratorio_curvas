@@ -22,7 +22,7 @@ class RepositorioCurvas:
 
         #verificamos si ya existe una curva con ese nombre
         if ruta.exists() and not p_sobrescribir:
-            raise FileExistsError(f'ya existe una curva guardada con el nombre '{p_curva.nombre}'")
+            raise FileExistsError(f"ya existe una curva guardada con el nombre '{p_curva.nombre}'")
 
         datos = {
            'nombre': p_curva.nombre,
