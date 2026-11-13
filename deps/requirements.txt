@@ -1,2 +1,4 @@
--e "./libs/biblioteca_ayed_fiuner"
+numpy
+matplotlib
+coverage
 python-dotenv==1.2.2
