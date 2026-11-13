@@ -1,7 +1,6 @@
 
+from ..geometria import Curva, Punto
 from pathlib import Path
-from modules.geometria.curva import Curva
-from modules.geometria.punto import Punto
 import json
 import re
 
