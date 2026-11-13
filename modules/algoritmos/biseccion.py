@@ -43,8 +43,8 @@ class Biseccion(AlgoritmoNumerico):
               cantidad de iteraciones (<= max_iteraciones), si se alcanzó el criterio
               de convergencia (error <= tolerancia) y el error de estimación."""
         self._validar_intervalo(p_a, p_b)
-        f_a = self.__evaluar(p_funcion, p_a)
-        f_b = self.__evaluar(p_funcion, p_b)
+        f_a = self._evaluar(p_funcion, p_a)
+        f_b = self._evaluar(p_funcion, p_b)
 
         # Caso especial: alguno de los extremos ya es raíz (0 iteraciones).
         if f_a == 0:
@@ -65,7 +65,7 @@ class Biseccion(AlgoritmoNumerico):
 
         while error > self.__tolerancia and iteraciones < self.__max_iteraciones:
             iteraciones += 1
-            f_medio = self.__evaluar(p_funcion, medio)
+            f_medio = self._evaluar(p_funcion, medio)
             if f_medio == 0:                       # el punto medio es la raíz exacta
                 return ResultadoBiseccion(p_a, p_b, medio, iteraciones, True, 0.0)
             if self.__mismo_signo(f_izquierda, f_medio):
@@ -77,14 +77,6 @@ class Biseccion(AlgoritmoNumerico):
 
         convergio = error <= self.__tolerancia
         return ResultadoBiseccion(p_a, p_b, medio, iteraciones, convergio, error)
-
-    @staticmethod
-    def __evaluar(p_funcion, p_x: float) -> float:
-        """Evalúa la función y verifica que el valor sea finito (privado)."""
-        valor = p_funcion.evaluar(p_x)
-        if not math.isfinite(valor):
-            raise ValueError(f"La función no da un valor finito en x = {p_x} (se obtuvo {valor}).")
-        return valor
 
     @staticmethod
     def __mismo_signo(p_valor_1: float, p_valor_2: float) -> bool:

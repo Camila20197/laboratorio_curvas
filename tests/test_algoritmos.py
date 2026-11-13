@@ -2,8 +2,8 @@
 import math
 import unittest
 
-from modules.algoritmos import AlgoritmoNumerico, Biseccion, SinCambioDeSignoError
-from modules.resultados import ResultadoBiseccion
+from modules.algoritmos import AlgoritmoNumerico, Biseccion, SinCambioDeSignoError, Trapecio
+from modules.resultados import Resultado, ResultadoBiseccion, ResultadoIntegracion
 
 
 class FuncionStub:
@@ -146,6 +146,75 @@ class TestBiseccion(unittest.TestCase):
     def test_b16_funcion_no_finita_en_un_extremo(self):
         with self.assertRaises(ValueError):
             Biseccion().calcular(FuncionStub(lambda x: math.inf if x == 1 else x), 1, 2)
+
+
+class TestTrapecio(unittest.TestCase):
+
+    def setUp(self):
+        self.cuadrado = FuncionStub(lambda x: x ** 2)
+
+    # --- Casos habituales ---
+    def test_t1_integral_de_x2_con_4_subintervalos(self):
+        resultado = Trapecio(4).calcular(self.cuadrado, 0, 1)
+        self.assertIsInstance(resultado, ResultadoIntegracion)
+        self.assertAlmostEqual(resultado.valor, 0.34375)
+
+    def test_t2_integral_de_seno_en_0_pi(self):
+        resultado = Trapecio(100).calcular(FuncionStub(math.sin), 0, math.pi)
+        self.assertAlmostEqual(resultado.valor, 2, delta=1e-3)
+
+    # --- Casos límite ---
+    def test_t3_funcion_lineal_es_exacta(self):
+        resultado = Trapecio(1).calcular(FuncionStub(lambda x: 2 * x + 1), 0, 1)
+        self.assertAlmostEqual(resultado.valor, 2.0, places=12)
+
+    def test_t4_un_solo_trapecio(self):
+        resultado = Trapecio(1).calcular(self.cuadrado, 0, 2)
+        self.assertAlmostEqual(resultado.valor, (2 - 0) * (0 + 4) / 2)
+
+    # --- Propiedad del error: proporcional a h² ---
+    def test_t5_duplicar_n_divide_el_error_por_4(self):
+        exacto = 1 / 3
+        error_4 = Trapecio(4).calcular(self.cuadrado, 0, 1).valor - exacto
+        error_8 = Trapecio(8).calcular(self.cuadrado, 0, 1).valor - exacto
+        self.assertAlmostEqual(error_4 / error_8, 4, places=6)
+
+    # --- Parámetros utilizados (RF5) ---
+    def test_t6_resultado_informa_los_parametros(self):
+        resultado = Trapecio(4).calcular(self.cuadrado, 0, 2)
+        self.assertEqual(resultado.a, 0)
+        self.assertEqual(resultado.b, 2)
+        self.assertEqual(resultado.subintervalos, 4)
+
+    # --- Entradas inválidas ---
+    def test_t7_subintervalos_invalidos(self):
+        for n in (0, -3, 2.5):
+            with self.assertRaises(ValueError):
+                Trapecio(n)
+
+    def test_t8_intervalo_invalido(self):
+        with self.assertRaises(ValueError):
+            Trapecio(4).calcular(self.cuadrado, 1, 0)
+
+    # --- Caso excepcional ---
+    def test_t9_funcion_no_finita(self):
+        with self.assertRaises(ValueError):
+            Trapecio(4).calcular(FuncionStub(lambda x: math.inf if x == 0.5 else x), 0, 1)
+
+
+class TestPolimorfismo(unittest.TestCase):
+
+    def test_p1_algoritmos_intercambiables(self):
+        """Principio de sustitución de Liskov: cualquier AlgoritmoNumerico se usa
+        igual (calcular) y siempre devuelve un Resultado."""
+        funcion = FuncionStub(lambda x: x ** 2 - 2)
+        algoritmos = [Biseccion(p_tolerancia=1e-6), Trapecio(10)]
+        for algoritmo in algoritmos:
+            with self.subTest(algoritmo=type(algoritmo).__name__):
+                self.assertIsInstance(algoritmo, AlgoritmoNumerico)
+                resultado = algoritmo.calcular(funcion, 1, 2)
+                self.assertIsInstance(resultado, Resultado)
+                self.assertIsInstance(resultado.resumen(), str)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,6 @@
 """Clase abstracta Resultado: resultado de un algoritmo numérico (RF4 y RF5).
 
-Responsabilidad: CONOCER los valores obtenidos por un algoritmo y saber
-mostrarse como texto. No calcula, no imprime ni dibuja.
+
 """
 from abc import ABC, abstractmethod
 

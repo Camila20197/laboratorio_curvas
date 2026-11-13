@@ -1,8 +1,4 @@
-"""Clase abstracta AlgoritmoNumerico (RF4 y RF5).
-
-Los algoritmos numéricos están separados de la interfaz y de la representación
-gráfica (RF5): no usan matplotlib ni la consola, así se prueban sin abrir ventanas.
-"""
+import math
 from abc import ABC, abstractmethod
 
 from modules.funciones import FuncionMatematica
@@ -29,3 +25,13 @@ class AlgoritmoNumerico(ABC):
         POST: no hace nada si p_a < p_b; en caso contrario lanza ValueError."""
         if not p_a < p_b:
             raise ValueError(f"Intervalo inválido: se requiere a < b (a={p_a}, b={p_b}).")
+
+    @staticmethod
+    def _evaluar(p_funcion: FuncionMatematica, p_x: float) -> float:
+        """Método protegido, común a todas las subclases (evita duplicar código).
+        POST: devuelve f(p_x) si es un número finito; en caso contrario lanza
+        ValueError (no puede garantizarse un resultado válido)."""
+        valor = p_funcion.evaluar(p_x)
+        if not math.isfinite(valor):
+            raise ValueError(f"La función no da un valor finito en x = {p_x} (se obtuvo {valor}).")
+        return valor
