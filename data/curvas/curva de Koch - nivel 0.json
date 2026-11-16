@@ -1,0 +1,13 @@
+{
+    "nombre": "curva de Koch - nivel 0",
+    "puntos": [
+        {
+            "x": 0.0,
+            "y": 0.0
+        },
+        {
+            "x": 1.0,
+            "y": 0.0
+        }
+    ]
+}
