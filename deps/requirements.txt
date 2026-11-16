@@ -1,3 +1,5 @@
+pillow
+pygame
 numpy
 matplotlib
 coverage
