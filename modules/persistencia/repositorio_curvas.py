@@ -3,6 +3,7 @@ from ..geometria import Curva, Punto
 from pathlib import Path
 import json
 import re
+import hashlib
 
 class RepositorioCurvas:
     def __init__(self, p_directorio: Path):
@@ -23,10 +24,7 @@ class RepositorioCurvas:
         if ruta.exists() and not p_sobrescribir:
             raise FileExistsError(f"ya existe una curva guardada con el nombre '{p_curva.nombre}'")
 
-        datos = {
-           'nombre': p_curva.nombre,
-           'puntos': [{'x': punto.x, 'y': punto.y} for punto in p_curva]
-        }
+        datos = {'nombre': p_curva.nombre, 'puntos': [{'x': punto.x, 'y': punto.y} for punto in p_curva]}
 
         with ruta.open('w', encoding='utf-8') as archivo:
            json.dump(datos, archivo, indent=4, ensure_ascii=False)
@@ -71,7 +69,17 @@ class RepositorioCurvas:
         return curva
 
     def listar(self) -> list:
-        return sorted(ruta.stem for ruta in self._directorio.glob('*.json') if ruta.is_file())
+        nombres = []
+
+        for ruta in self._directorio.glob('*.json'):
+            if ruta.is_file():
+                with ruta.open('r', encoding='utf-8') as archivo:
+                    datos = json.load(archivo)
+
+                if isinstance(datos, dict) and isinstance(datos.get('nombre'), str):
+                    nombres.append(datos['nombre'])
+
+        return sorted(nombres)
 
     @staticmethod
     def _nombre_seguro(p_nombre: str) -> str:
@@ -80,7 +88,19 @@ class RepositorioCurvas:
 
         nombre = p_nombre.strip()
 
-        if not re.fullmatch(r"[\w -]+", nombre):
-            raise ValueError('el nombre contiene caracteres no permitidos')
+        if re.fullmatch(r"[\w -]+", nombre):
+            nombre_archivo = nombre
+        else:
+            #reemplazar caracteres no permitidos
+            nombre_limpio = re.sub(r"[^\w -]+", "_", nombre)
+            nombre_limpio = nombre_limpio.strip(" _-")
 
-        return nombre
+            if not nombre_limpio:
+                nombre_limpio = 'curva'
+
+            #aniadir un identificador para evitar colisiones
+            identificador = hashlib.sha256(nombre.encode('utf-8')).hexdigest()[:10]
+            nombre_archivo = f'{nombre_limpio}_{identificador}'
+
+        return nombre_archivo
+

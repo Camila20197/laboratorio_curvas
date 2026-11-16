@@ -35,6 +35,30 @@ class TestRepositorioCurvas(unittest.TestCase):
             self.assertEqual(recuperada.puntos[0].x, 5)
             self.assertEqual(recuperada.puntos[0].y, 6)
 
+    def test_guardar_curva_con_nombre_matematico(self):
+        with tempfile.TemporaryDirectory() as directorio:
+            repositorio = RepositorioCurvas(Path(directorio))
+            curva = Curva('curva de sin(x)')
+            curva.agregar_punto(Punto(0, 0))
+
+            repositorio.guardar(curva)
+
+            recuperada = repositorio.cargar('curva de sin(x)')
+
+            self.assertEqual(recuperada.nombre, 'curva de sin(x)')
+            self.assertEqual(repositorio.listar(), ['curva de sin(x)'])
+
+    def test_nombres_diferentes_no_colisionan(self):
+        with tempfile.TemporaryDirectory() as directorio:
+            repositorio = RepositorioCurvas(Path(directorio))
+            curva1 = Curva('curva de sin(x)')
+            curva2 = Curva('curva de sin[x]')
+
+            repositorio.guardar(curva1)
+            repositorio.guardar(curva2)
+
+            self.assertEqual(repositorio.listar(), ['curva de sin(x)', 'curva de sin[x]'])
+
 if __name__ == '__main__':
     unittest.main()
 
